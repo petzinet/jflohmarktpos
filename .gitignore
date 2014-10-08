@@ -1,0 +1,4 @@
+bin/**
+src-gen/**
+!.empty
+jflohmarktpos-*.jar

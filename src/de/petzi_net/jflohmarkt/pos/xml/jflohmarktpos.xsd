@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:complexType name="Receipt" abstract="true">
+    	<xs:attribute name="pos" type="xs:int" use="required"/>
+    	<xs:attribute name="receipt" type="xs:int" use="required"/>
+    	<xs:attribute name="timestamp" type="xs:dateTime" use="required"/>
+    	<xs:attribute name="cashier" type="cashier" use="required"/>
+    	<xs:attribute name="state" type="state" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="state">
+    	<xs:restriction base="xs:string">
+    	    <xs:enumeration value="ACTIVE"/>
+    	    <xs:enumeration value="FINISHED"/>
+    	    <xs:enumeration value="ABORTED"/>
+    	</xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="cashier">
+    	<xs:restriction base="xs:int">
+    	    <xs:minInclusive value="100"/>
+    	    <xs:maxInclusive value="999"/>
+    	</xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="seller">
+    	<xs:restriction base="xs:int">
+    	    <xs:minInclusive value="1000"/>
+    	    <xs:maxInclusive value="9999"/>
+    	</xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="price">
+        <xs:restriction base="xs:decimal">
+            <xs:totalDigits value="6"/>
+            <xs:fractionDigits value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ItemLine">
+        <xs:attribute name="valid" type="xs:boolean" use="required"/>
+    	<xs:attribute name="timestamp" type="xs:dateTime" use="required"/>
+        <xs:attribute name="seller" type="seller" use="required"/>
+        <xs:attribute name="price" type="price" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="PaymentLine">
+        <xs:attribute name="valid" type="xs:boolean" use="required"/>
+    	<xs:attribute name="timestamp" type="xs:dateTime" use="required"/>
+        <xs:attribute name="amount" type="price" use="required"/>
+    </xs:complexType>
+
+    <xs:element name="sale">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="Receipt">
+                    <xs:sequence>
+                        <xs:element name="item" type="ItemLine" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="payment" type="PaymentLine" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="quantity">
+    	<xs:restriction base="xs:int">
+    	    <xs:minInclusive value="0"/>
+    	    <xs:maxInclusive value="9999"/>
+    	</xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="DenominationLine">
+        <xs:attribute name="valid" type="xs:boolean" use="required"/>
+    	<xs:attribute name="timestamp" type="xs:dateTime" use="required"/>
+        <xs:attribute name="quantity" type="quantity" use="required"/>
+        <xs:attribute name="value" type="price" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="DenominationReceipt" abstract="true">
+        <xs:complexContent>
+            <xs:extension base="Receipt">
+                <xs:sequence>
+                    <xs:element name="denomination" type="DenominationLine" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:element name="dropoff">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="DenominationReceipt"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="pickup">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="DenominationReceipt"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="inventory">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="DenominationReceipt"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    
+</xs:schema>

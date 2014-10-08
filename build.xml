@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jflohmarktpos" default="dist">
+
+    <property name="version" value="snapshot"/>
+	
+    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+        <classpath>
+            <fileset dir="${basedir}/jaxb" includes="*.jar" />
+        </classpath>
+    </taskdef>
+	
+	<target name="clean">
+		<delete dir="${basedir}/src-gen">
+			<exclude name="**/.empty"/>
+		</delete>
+		<mkdir dir="${basedir}/src-gen"/>
+		<delete dir="${basedir}/bin"/>
+		<mkdir dir="${basedir}/bin"/>
+		<delete dir="${basedir}">
+			<include name="jflohmarktpos-*.jar"/>
+		</delete>
+	</target>
+	
+    <target name="generate" depends="clean">
+    	<xjc schema="${basedir}/src/de/petzi_net/jflohmarkt/pos/xml/jflohmarktpos.xsd" destdir="${basedir}/src-gen" package="de.petzi_net.jflohmarkt.pos.xml"/>
+    </target>
+	
+	<target name="build" depends="generate">
+		<javac destdir="${basedir}/bin" debug="on">
+			<src path="${basedir}/src-gen"/>
+			<src path="${basedir}/src"/>
+		</javac>
+		<copy todir="${basedir}/bin">
+			<fileset dir="${basedir}/src">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+	
+    <target name="dist" depends="build">
+        <jar destfile="${basedir}/jflohmarktpos-${version}.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="de.petzi_net.jflohmarkt.pos.JFlohmarktPOS"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${basedir}/bin"/>
+        </jar>
+    </target>
+
+</project>
