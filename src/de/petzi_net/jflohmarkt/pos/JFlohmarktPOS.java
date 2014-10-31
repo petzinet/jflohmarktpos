@@ -8,10 +8,14 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.LayoutManager2;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,6 +32,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -89,9 +94,95 @@ public class JFlohmarktPOS extends JFrame {
 			
 		});
 		
+		JPanel wrapperPanel = new JPanel();
+		wrapperPanel.setOpaque(true);
+		wrapperPanel.setBackground(new Color(0, 128, 0));
+		wrapperPanel.setLayout(new LayoutManager2() {
+			
+			@Override
+			public void removeLayoutComponent(Component comp) {
+			}
+			
+			@Override
+			public Dimension preferredLayoutSize(Container parent) {
+				if (parent.getComponents().length > 0) {
+					return parent.getComponents()[0].getPreferredSize();
+				} else {
+					return new Dimension(0, 0);
+				}
+			}
+			
+			@Override
+			public Dimension minimumLayoutSize(Container parent) {
+				if (parent.getComponents().length > 0) {
+					return parent.getComponents()[0].getMinimumSize();
+				} else {
+					return new Dimension(0, 0);
+				}
+			}
+			
+			@Override
+			public void layoutContainer(Container parent) {
+				Insets insets = parent.getInsets();
+				int width = parent.getWidth() - insets.left - insets.right;
+				int height = parent.getHeight() - insets.top - insets.bottom;
+				for (Component component : parent.getComponents()) {
+					Dimension maxSize = component.getMaximumSize();
+					int x;
+					int y;
+					int w;
+					int h;
+					if (maxSize.width > width) {
+						x = insets.left;
+						w = width;
+					} else {
+						x = insets.left + (width - maxSize.width) / 2;
+						w = maxSize.width;
+					}
+					if (maxSize.height > height) {
+						y = insets.top;
+						h = height;
+					} else {
+						y = insets.top + (height - maxSize.height) / 2;
+						h = maxSize.height;
+					}
+					component.setBounds(x, y, w, h);
+				}
+			}
+			
+			@Override
+			public void addLayoutComponent(String name, Component comp) {
+			}
+			
+			@Override
+			public Dimension maximumLayoutSize(Container target) {
+				return new Dimension(Short.MAX_VALUE, Short.MAX_VALUE);
+			}
+			
+			@Override
+			public void invalidateLayout(Container target) {
+			}
+			
+			@Override
+			public float getLayoutAlignmentY(Container target) {
+				return 0.5f;
+			}
+			
+			@Override
+			public float getLayoutAlignmentX(Container target) {
+				return 0.5f;
+			}
+			
+			@Override
+			public void addLayoutComponent(Component comp, Object constraints) {
+			}
+			
+		});
+		
 		BasePanel mainPane = new BasePanel(new BorderLayout(0, 0));
+		mainPane.setMaximumSize(new Dimension(1024, 768));
 		mainPane.setOpaque(true);
-		mainPane.setBackground(Color.LIGHT_GRAY);
+		mainPane.setBackground(new Color(0, 192, 0));
 		mainPane.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		
 		BasePanel contentPanel = new BasePanel(new BorderLayout(5, 5));
@@ -185,7 +276,8 @@ public class JFlohmarktPOS extends JFrame {
 		
 		mainPane.add(controlPanel, BorderLayout.NORTH);
 		
-		setContentPane(mainPane);
+		wrapperPanel.add(mainPane);
+		setContentPane(wrapperPanel);
 		
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(new ExtendedKeyboardFocusManager());
 		Set<AWTKeyStroke> keyStrokes = new HashSet<AWTKeyStroke>(KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
@@ -199,6 +291,14 @@ public class JFlohmarktPOS extends JFrame {
 		}
 		
 		setVisible(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				setExtendedState(JFrame.MAXIMIZED_BOTH);
+			}
+			
+		});
 	}
 	
 	private static final String PROPERTY_LAST_FOCUS_OWNER = ModuleSwitcher.class.getName() + ".lastFocusOwner";
